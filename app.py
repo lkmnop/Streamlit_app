@@ -1,11 +1,27 @@
 import streamlit as st
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
 import base64
+import time
 
-# Connect to MongoDB Atlas
-client = MongoClient("mongodb+srv://sudhakartechw:root@crazy1.0em7j98.mongodb.net/")
-db = client["mydb"]
-collection = db["image"]
+# MongoDB Atlas connection string
+MONGO_URI = "mongodb+srv://sudhakartechw:root@crazy1.0em7j98.mongodb.net/mydb?retryWrites=true&w=majority"
+
+# Connect to MongoDB Atlas with retry logic
+def connect_to_mongo(uri, retries=5, delay=5):
+    for attempt in range(retries):
+        try:
+            client = MongoClient(uri, serverSelectionTimeoutMS=5000)
+            client.server_info()  # Trigger connection
+            return client
+        except errors.ServerSelectionTimeoutError as err:
+            st.sidebar.error(f"Attempt {attempt + 1} failed: {err}")
+            time.sleep(delay)
+    st.sidebar.error("Failed to connect to MongoDB after several attempts.")
+    return None
+
+client = connect_to_mongo(MONGO_URI)
+db = client["mydb"] if client is not None else None
+collection = db["image"] if db is not None else None
 
 def insert_data(profile_photo, name, employee_id, email, phone_number):
     # Convert uploaded image to base64 format
@@ -28,6 +44,10 @@ def view_data(employee_id):
 
 def main():
     st.title("Employee Management System")
+
+    if collection is None:
+        st.error("Could not connect to the database. Please try again later.")
+        return
 
     page = st.sidebar.selectbox("Select a page", ["Add Employee", "View Employee"])
 
