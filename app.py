@@ -4,7 +4,7 @@ import base64
 import time
 
 # MongoDB Atlas connection string
-MONGO_URI = "mongodb+srv://sudhakartechw:root@crazy1.0em7j98.mongodb.net/mydb?retryWrites=true&w=majority"
+MONGO_URI = "mongodb+srv://sudhakartechw:root@crazy1.0em7j98.mongodb.net/mydb?retryWrites=true&w=majority&ssl=true&tlsAllowInvalidCertificates=true"
 
 # Connect to MongoDB Atlas with retry logic
 def connect_to_mongo(uri, retries=5, delay=5):
